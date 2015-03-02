@@ -1,0 +1,23 @@
++>HD01
+SELECT event_id
+FROM %s.event
+JOIN %s.sort ON event.sort_id = sort.sort_id
+JOIN %s.sample ON sort.sample_id = sample.sample_id
+JOIN %s.donor ON sample.donor_id = donor.donor_id
+WHERE donor_identifier = 'HD01'
+
++>HD02
+SELECT event_id
+FROM %s.event
+JOIN %s.sort ON event.sort_id = sort.sort_id
+JOIN %s.sample ON sort.sample_id = sample.sample_id
+JOIN %s.donor ON sample.donor_id = donor.donor_id
+WHERE donor_identifier = 'HD02'
+
++>HD03
+SELECT event_id
+FROM %s.event
+JOIN %s.sort ON event.sort_id = sort.sort_id
+JOIN %s.sample ON sort.sample_id = sample.sample_id
+JOIN %s.donor ON sample.donor_id = donor.donor_id
+WHERE donor_identifier = 'HD03'
