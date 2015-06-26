@@ -36,7 +36,7 @@ optional arguments:
   -l {H,K,L}, --locus {H,K,L}
                         Immunoglogulin locus.
                         
-  -c, --constant        Show data for consant segments.
+  -c, --constant        Show data for constant segments.
   -f {V,J}, --families {V,J}
                         Group data by families of a given segment type V or J.
   -g {V,J}, --genes {V,J}
@@ -50,6 +50,7 @@ import numpy as np
 import numpy.random as random
 import MySQLdb as mysql
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import sys
 import colorsys
 import argparse
@@ -91,7 +92,7 @@ if args.database:
     db = args.database
 else:
     db = conf['dabase']
-lib = 'igdb_library'
+lib = 'library_scireptor'
 
 if args.constant:
     resolve = 'constant'
@@ -125,7 +126,7 @@ def get_gene_list (event_statement):
             JOIN %s.sequences ON sequences.seq_id = VDJ_segments.seq_id \
             AND sequences.consensus_rank = 1 \
             JOIN %s.VDJ_library on VDJ_library.VDJ_id = VDJ_segments.VDJ_id \
-            JOIN %s.event ON event.event_id = sequences.seq_id \
+            JOIN %s.event ON event.event_id = sequences.event_id \
             where igblast_rank=1 and VDJ_segments.type = '%s' AND VDJ_segments.locus = '%s' \
             AND event.event_id IN (%s) \
             GROUP BY concat(seg_family, seg_gene) " % (db, db, lib, db, segment, args.locus, event_statement)
@@ -144,7 +145,7 @@ def get_gene_list (event_statement):
             JOIN %s.sequences ON sequences.seq_id = VDJ_segments.seq_id \
             AND sequences.consensus_rank = 1 \
             JOIN %s.VDJ_library on VDJ_library.VDJ_id = VDJ_segments.VDJ_id \
-            JOIN %s.event ON event.event_id = sequences.seq_id \
+            JOIN %s.event ON event.event_id = sequences.event_id \
             where igblast_rank=1 and VDJ_segments.type = '%s' AND VDJ_segments.locus = '%s' \
             AND event.event_id IN (%s) \
             GROUP BY seg_family " % (db, db, lib, db,segment, args.locus, event_statement)
@@ -161,11 +162,11 @@ def get_gene_list (event_statement):
             FROM %s.constant_segments \
             JOIN %s.sequences ON sequences.seq_id = constant_segments.seq_id \
             AND sequences.consensus_rank = 1 \
-            JOIN %s.event ON event.event_id = sequences.seq_id \
+            JOIN %s.event ON event.event_id = sequences.event_id \
             where sequences.locus = '%s' \
             AND event.event_id IN (%s) \
             GROUP BY constant_segments.name " % (db, db, db, args.locus, event_statement)
-        gene_statement = gene_statement + order 
+        gene_statement = gene_statement + order
             
     else: 
         print "Parameter 'resolve' needs to be either 'genes' or 'families' or 'constant'. Exiting....\n"
@@ -187,23 +188,20 @@ def get_gene_list (event_statement):
             gene_labels.append(gene[1])
     
     return gene_heights, gene_labels 
-  
-
-
+    
 if args.plotstyle == 'hist':
     for event_statement, event_name in zip(event_statements, event_names):
-        #print event_statement
         gene_heights, gene_labels = get_gene_list(event_statement)
         plt.figure(figsize=(0.3*len(gene_labels), 7))
         
         if args.normalize == True:
             norm_fact = 1./sum(gene_heights)
             gene_heights = [height*norm_fact for height in gene_heights]
-            norm = "n"
+            norm = "norm"
             plt.ylabel("Relative Frequencies")
         else:
             norm_fact = 1
-            norm = ""
+            norm = "abs"
             plt.ylabel("Absolute frequencies")
     
         positions = np.arange(0,len(gene_heights),1)    
@@ -222,10 +220,10 @@ elif args.plotstyle == 'stacked':
         if args.normalize == True:
             norm_fact = 1./sum(gene_heights)
             plt.xlim(0,1)
-            norm = "n"
+            norm = "norm"
         else:
             norm_fact = 1
-            norm = ""
+            norm = "abs"
         palette = igplt.random_colors(200)
         bottom = 0
         for height, label in zip(gene_heights, gene_labels):
@@ -251,4 +249,3 @@ elif args.plotstyle == 'stacked':
 else:
     print "Plot option must be 'hist' or 'stacked'\n"
     exit
-

@@ -41,3 +41,39 @@ def read_eventfile (eventfile, db):
     event_statements.append(event_statement)
     
     return event_names, event_statements
+    
+
+
+def create_temp_heavy_light (db_cursor):
+    create_statement = "CREATE TABLE IF NOT EXISTS heavy_light AS ( \
+        SELECT sequences.event_id, sequences.seq_id as H_seq_id, sequences.locus as H_locus, \
+        max_light.seq_id as KL_seq_id, max_light.locus as KL_locus \
+        FROM \
+        (SELECT s1.event_id, s1.locus, s1.seq_id FROM \
+        (SELECT sequences.event_id, sequences.locus, sequences.seq_id, n_seq FROM sequences \
+        JOIN consensus_stats \
+        ON consensus_stats.sequences_seq_id = sequences.seq_id \
+        AND (sequences.locus = 'K' OR sequences.locus = 'L') \
+        AND sequences.consensus_rank = 1) as s1 \
+        LEFT JOIN \
+        (SELECT sequences.event_id, sequences.locus, sequences.seq_id, n_seq FROM sequences \
+        JOIN consensus_stats \
+        ON consensus_stats.sequences_seq_id = sequences.seq_id \
+        AND (sequences.locus = 'K' OR sequences.locus = 'L') \
+        AND sequences.consensus_rank = 1) as s2 \
+        ON s1.event_id = s2.event_id \
+        AND s1.n_seq < s2.n_seq \
+        WHERE s2.event_id is NULL \
+        ) as max_light \
+        JOIN sequences ON sequences.event_id = max_light.event_id \
+        AND sequences.locus = 'H' AND sequences.consensus_rank = 1 \
+        );"
+    db_cursor.execute(create_statement)
+
+def get_H_isotype (event_id, db_cursor):
+    isotype_statement = "SELECT constant_segments.name FROM constant_segments \
+        JOIN sequences ON sequences.seq_id = constant_segments.seq_id \
+        WHERE locus = 'H' AND consensus_rank = 1 AND event_id = %d;" % (event_id)
+    db_cursor.execute(isotype_statement)
+    isotype = db_cursor.fetchall()
+    return isotype
