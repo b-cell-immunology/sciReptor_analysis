@@ -19,7 +19,7 @@ conf = bcelldb.get_config()
 # date, user, database, software version
 # config file variables
 
-def plot_log (object_name, args, short='T'):
+def plot_log (object_name, args, db, short='T'):
     
     """
     Arguments:
@@ -32,7 +32,7 @@ def plot_log (object_name, args, short='T'):
     
     date = dt.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    log_string = "%s generated from database %s on %s.\nCommand: \"%s\"\n" % (object_name, conf['database'], date, " ".join(args))
+    log_string = "%s generated from database %s on %s.\nCommand: \"%s\"\n" % (object_name, db, date, " ".join(args))
     
     if (short == 'F'):
         

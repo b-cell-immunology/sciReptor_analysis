@@ -243,9 +243,10 @@ elif args.plotstyle == 'stacked':
         else: ncol = 1
     lgd = plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol = ncol)
     plt.yticks(np.arange(len(event_names))+0.4, event_names)
+    lbl = plt.xlabel('Counts')
     plt.ylim(-0.1, len(event_names)-0.1)
-    ttl = plt.title(igplt.plot_log('Segment usage', sys.argv))
-    plt.savefig("%s_%s_%s_%s_%s_%s_%s" % (db, args.event_infile, resolve, segment, args.locus, args.plotstyle, norm) + '.pdf', bbox_extra_artists=(lgd,ttl,), bbox_inches='tight')
+    ttl = plt.title(igplt.plot_log('Segment usage', sys.argv, db))
+    plt.savefig("%s_%s_%s_%s_%s_%s_%s" % (db, args.event_infile, resolve, segment, args.locus, args.plotstyle, norm) + '.pdf', bbox_extra_artists=(lgd,ttl,lbl,), bbox_inches='tight')
 else:
     print "Plot option must be 'hist' or 'stacked'\n"
     exit
