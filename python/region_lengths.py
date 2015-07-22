@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 import sys
 import argparse
 import igdb_queries as igdbq
-import seaborn
 
 
 
