@@ -8,7 +8,7 @@ import re
 
 def get_config():
 	"""
-	Look for config file in . and than ../
+	Look for config file in . and than ../../
 	Return config key value pairs in dictionnary conf[].
 	"""
 	
@@ -19,7 +19,7 @@ def get_config():
 	except IOError:
 		# try from ../ directory
 		try:
-			config_file = open("../config", "r")
+			config_file = open("../../config", "r")
 		except IOError:
 			print "no config file found"
 
