@@ -65,7 +65,6 @@ def get_channels (plate_barcode):
     return channels
 
 channels = get_channels(plate_barcode)
-# channels koennen auch ueber kommandozeile uebergeben werden
 
 for combi in itt.combinations(channels, 2):
     # INITIATE PLOTTING INSTANCE
@@ -159,16 +158,12 @@ for combi in itt.combinations(channels, 2):
         for x,y in zip(null_value_channel_dict[channel1[0]], null_value_channel_dict[channel2[0]]):
             if (x>=0 and y>=0):
     		ax.scatter(np.arcsinh(x), np.arcsinh(y), color = 'lightgrey', s = 80)
-            #plt.scatter(x, y, color = 'lightgrey', s = 80)
         
         
         
-        #plt.figure()
         for x,y,c in zip(value_channel_dict[channel1[0]], value_channel_dict[channel2[0]], value_channel_dict['color']):
             if (x>=0 and y>=0):	
     		ax.scatter(np.arcsinh(x), np.arcsinh(y), color = c, s = 20)
-            #plt.scatter(x, y, color = c, s = 20)
-            #plt.scatter(x, y, color = c)
         ax.set_xlabel(channel1[0] + "\n" + event_name)
         ticks = [0,10, 100, 10**3,10**4,10**5]
         tick_labels = ["0","1E+01","1E+02","1E+03", "1E+04", "1E+05"]
@@ -184,16 +179,3 @@ for combi in itt.combinations(channels, 2):
         
     plt.close()
     
-#        for key,color in sorted(isotype_color_dict.items()):
-#            plt.figtext(0.1,position_count,key, color = color, size=14, weight='bold', style = 'italic')
-#            position_count = position_count + 0.04
-#        plt.xlabel(channel1, size = 14)
-#        plt.ylabel(channel2, size = 14)    
-    #ighm = [color == 'darkorchid' for color in value_channel_dict['color']]
-    #for seqevent, igmbool in zip(events,ighm):
-     #   if igmbool is True:
-     #       isotype_statement = "SELECT name FROM " + database + ".constant_segments \
-     #                   where seq_id = %d;" % (int(seqevent[0]))
-     #       cursor.execute(isotype_statement)
-     #       print cursor.fetchall()
-     #       print seqevent

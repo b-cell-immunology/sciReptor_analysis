@@ -74,58 +74,11 @@ def get_color (name):
             print 'None Type for one of the coloridentifiers. Choosing black color.'
             return 'black'
 
-#for line in color_file:
-#    if (line != "\n" and line[0] != '#'):
-#        try :
-#            entries = line[:-1].split('\t')
-#            color_dict[entries[0]] = (int(entries[1]), int(entries[2]), int(entries[3]))
-#        except IndexError:
-#            pass
  
 def hex_to_rgb(value):
     value = value.lstrip('#')
     lv = len(value)
     return tuple(int(value[i:i + lv // 3], 16)/255 for i in range(0, lv, lv // 3))
-
-
-
-
-
-#hls_list = []  
-#plt.figure()
-#for i,color in zip(range(len(color_list)), color_list):
-#    rgb = hex_to_rgb(color)
-#    hls = colorsys.rgb_to_hls(rgb[0], rgb[1], rgb[2])
-#    #print rgb
-#    #print hls
-#    hls_list.append(hls)
-#    rgb2 = colorsys.hls_to_rgb(hls[0],hls[1],hls[2])
-#    #plt.scatter(i,i,color=rgb, s= 300)    
-#    #plt.scatter(i,i/2,color=rgb2, s= 300)  
-#    
-#hls_list.sort()
-#
-#ext_hls_list = []
-#for hls in hls_list:
-#    ext_hls_list.append(hls)
-#    hue = hls[0]
-#    li = hls[1]
-#    sat = hls[2]
-#    for s in np.arange(0.3,1,0.2):
-#        ext_hls_list.append((hue,li,s))
-#    for l in np.arange(0.2,0.8,0.15):
-#        ext_hls_list.append((hue,l,sat))
-#        
-#
-#for i,hls in zip(range(len(ext_hls_list)), ext_hls_list):
-#    rgb2 = colorsys.hls_to_rgb(hls[0],hls[1],hls[2])  
-#    #plt.scatter(i*2,i/2,color=rgb2, s= 300, label = hls)  
-#
-#out = open('/home/katharina/Desktop/hls_list.txt','w')
-#for line in ext_hls_list:
-#    out.write(str(line)+ '\n')
-#out.close()
-
 
 # N random colors
 def random_colors (N):
