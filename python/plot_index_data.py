@@ -28,7 +28,10 @@ parser.add_argument("-l", "--locus", type=str,
                     choices=['H','K','L'])
 # need to find out which channels to select. Take them from exemplary plate with barcode
 parser.add_argument("-pb", "--platebarcode", type=str, 
-                    help="plate barcode to select channels that will be displayed") 
+                    help="plate barcode to select channels that will be displayed")
+parser.add_argument("-o", "--outputdir", type=str, 
+                    help="directory for pdf output") 
+
 args = parser.parse_args()
 
 db = args.database
@@ -176,7 +179,7 @@ for combi in itt.combinations(channels, 2):
         ax.set_ylim(0,np.arcsinh(10**5))
         plt.show()
     
-    plt.savefig('cluster_'+channel1[0]+'_'+channel2[0]+'.pdf')
+    plt.savefig(args.outputdir + '/flow_'+channel1[0]+'_'+channel2[0]+'.pdf')
         
     plt.close()
 

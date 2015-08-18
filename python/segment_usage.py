@@ -83,6 +83,8 @@ group.add_argument("-f", "--families", type=str,
 group.add_argument("-g", "--genes", type=str, 
                    help="resolve genes V or J", 
                    choices=['V','J'])
+parser.add_argument("-o", "--outputdir", type=str, 
+                    help="directory for pdf output") 
 
 args = parser.parse_args()
 
@@ -243,7 +245,7 @@ elif args.plotstyle == 'stacked':
     lbl = plt.xlabel('Counts')
     plt.ylim(-0.1, len(event_names)-0.1)
     ttl = plt.title(igplt.plot_log('Segment usage', sys.argv, db))
-    plt.savefig("%s_%s_%s_%s_%s_%s_%s" % (db, args.event_infile, resolve, segment, args.locus, args.plotstyle, norm) + '.pdf', bbox_extra_artists=(ttl,lbl,), bbox_inches='tight')
+    plt.savefig(args.outputdir + "/%s_%s_%s_%s_%s_%s_%s" % (db, args.event_infile, resolve, segment, args.locus, args.plotstyle, norm) + '.pdf', bbox_extra_artists=(ttl,lbl,), bbox_inches='tight')
 else:
     print "Plot option must be 'hist' or 'stacked'\n"
     exit

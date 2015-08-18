@@ -30,6 +30,8 @@ parser.add_argument("-r", "--resolve", type=str,
 parser.add_argument("-t", "--segtype", type=str,
 		    help="for resolve options families/genes only: which segments to show",
 		    choices=["V","J"])
+parser.add_argument("-o", "--outputdir", type=str, 
+                    help="directory for pdf output") 
 args = parser.parse_args()
 
 db = args.database
@@ -243,20 +245,12 @@ for ax, im_title in zip(grid, event_names):
                    right= 'off', left = 'off')
     ax.set_xticks(range(len(list1_names)))
     lbls=ax.set_xticklabels(list1_names, rotation=90)
-
-<<<<<<< HEAD
-=======
-igdbplt.plot_log('Segment association', sys.argv, db)
->>>>>>> b862c6baef3ef05c76f0e3ac19ccd9c28a3e57f6
-plt.draw()       
+   
 
 filename = '%s_%s_%s.pdf' % (db,resolve,seg_type)
-<<<<<<< HEAD
+
 plt.tight_layout()
-plt.savefig(filename)      
+plt.savefig(args.output_dir + "/" + filename)      
 
 # drop temporary table
 igdbq.drop_temp_heavy_light(cursor)
-=======
-plt.savefig(filename, bbox_extra_artists=(lbls[0],), bbox_inches='tight')      
->>>>>>> b862c6baef3ef05c76f0e3ac19ccd9c28a3e57f6

@@ -26,6 +26,8 @@ parser.add_argument("-l", "--locus", type=str,
 parser.add_argument("-c", "--cumulative",
                     help="Show cumulative frequencies", 
                     action="store_true")
+parser.add_argument("-o", "--outputdir", type=str, 
+                    help="directory for pdf output") 
 
 args = parser.parse_args()
 
@@ -83,4 +85,4 @@ if args.normalize:
     
 plt.ylabel(title)
 ttl = plt.title(igplt.plot_log(args.region + ' region length distribution', sys.argv))
-plt.savefig("%s_%s_%s_%s" % (args.event_infile, args.locus, args.region, title) + '.pdf', bbox_extra_artists=(ttl,), bbox_inches='tight')
+plt.savefig(args.outputdir + "/%s_%s_%s_%s" % (args.event_infile, args.locus, args.region, title) + '.pdf', bbox_extra_artists=(ttl,), bbox_inches='tight')
