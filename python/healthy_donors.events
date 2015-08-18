@@ -7,22 +7,3 @@ JOIN %s.donor ON sample.donor_id = donor.donor_id
 WHERE donor_identifier = 'M70'
 AND sample.tissue = 'bone marrow'
 
-+>M70 PBMC
-SELECT event_id
-FROM %s.event
-JOIN %s.sort ON event.sort_id = sort.sort_id
-JOIN %s.sample ON sort.sample_id = sample.sample_id
-JOIN %s.donor ON sample.donor_id = donor.donor_id
-WHERE donor_identifier = 'M70'
-AND sample.tissue = 'PBMC'
-
-+>M71 BM
-SELECT event_id
-FROM %s.event
-JOIN %s.sort ON event.sort_id = sort.sort_id
-JOIN %s.sample ON sort.sample_id = sample.sample_id
-JOIN %s.donor ON sample.donor_id = donor.donor_id
-WHERE donor_identifier = 'M71'
-AND sample.tissue = 'bone marrow'
-
-

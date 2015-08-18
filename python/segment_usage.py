@@ -240,7 +240,7 @@ elif args.plotstyle == 'stacked':
         if len(label_list) > 15:
             ncol = 2
         else: ncol = 1
-    #lgd = plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol = ncol)
+    lgd = plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol = ncol)
     plt.yticks(np.arange(len(event_names))+0.4, event_names)
     lbl = plt.xlabel('Counts')
     plt.ylim(-0.1, len(event_names)-0.1)

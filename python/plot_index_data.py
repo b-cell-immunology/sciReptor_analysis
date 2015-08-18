@@ -178,7 +178,8 @@ for combi in itt.combinations(channels, 2):
         ax.set_xlim(0,np.arcsinh(10**5))
         ax.set_ylim(0,np.arcsinh(10**5))
         plt.show()
-    
+
+    plt.tight_layout()    
     plt.savefig(args.outputdir + '/flow_'+channel1[0]+'_'+channel2[0]+'.pdf')
         
     plt.close()

@@ -84,5 +84,5 @@ if args.normalize:
     title = title + " (normalized)"
     
 plt.ylabel(title)
-ttl = plt.title(igplt.plot_log(args.region + ' region length distribution', sys.argv))
+ttl = plt.title(igplt.plot_log(args.region + ' region length distribution', sys.argv, db))
 plt.savefig(args.outputdir + "/%s_%s_%s_%s" % (args.event_infile, args.locus, args.region, title) + '.pdf', bbox_extra_artists=(ttl,), bbox_inches='tight')
