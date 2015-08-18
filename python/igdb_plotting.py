@@ -5,7 +5,9 @@ bcelldb_plotting.py
 Module that contains standard funtions for plotting data from the igdb.
 """
 
-import matplotlib.pyplot as plt
+import bcelldb_init as bcelldb
+import matplotlib as mpl
+mpl.use('Agg')
 import numpy as np
 import numpy.random as random
 import sys

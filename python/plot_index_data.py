@@ -182,3 +182,4 @@ for combi in itt.combinations(channels, 2):
 
 # drop temporary heavy_light table
 igdbq.drop_temp_heavy_light(cursor)
+
