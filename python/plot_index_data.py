@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
-"""
-Spyder Editor
-
-This temporary script file is located here:
-/home/katharina/.spyder2/.temp.py
-"""
 
 import numpy as np
-#import matplotlib.pyplot as plt
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
@@ -18,23 +11,37 @@ import itertools as itt
 import igdb_queries as igdbq
 import igdb_plotting as igdbplt
 from mpl_toolkits.axes_grid1 import ImageGrid
+import argparse
 
-# get configuration using bcelldb_init
-conf = bcelldb.get_config()
+# parse arguments
 
+parser = argparse.ArgumentParser()
 
-event_infile = 'healthy_donors.events'
+parser.add_argument("event_infile", 
+                    type = str, 
+                    help="File containing different SQL queries yielding a list of event_ids.")
+parser.add_argument("-d", "--database", 
+                    type = str, 
+                    help="manual input of database scheme")
+parser.add_argument("-l", "--locus", type=str, 
+                    help="locus H, K, L", 
+                    choices=['H','K','L'])
+# need to find out which channels to select. Take them from exemplary plate with barcode
+parser.add_argument("-pb", "--platebarcode", type=str, 
+                    help="plate barcode to select channels that will be displayed") 
+args = parser.parse_args()
 
-# database
-db = 'healthy'
-experiment_id = 'D01'
-locus = 'H'
-plate_barcode = 'D01X0002C0'
-
+db = args.database
+locus = args.locus
+plate_barcode = args.platebarcode
+event_infile = args.event_infile
 
 # connect to database via ~/.my.conf settings
 dab = mysql.connect(db=db,read_default_file="~/.my.cnf", read_default_group='mysql_igdb')
 cursor = dab.cursor()
+
+# generate heavy_light table
+igdbq.create_temp_heavy_light(cursor)
 
 # read in event file
 event_names, event_statements = igdbq.read_eventfile(event_infile, db)
@@ -98,7 +105,6 @@ for combi in itt.combinations(channels, 2):
                     cursor.execute(query_statement)
                     value = cursor.fetchall()
                     value = value[0][0]
-                    print value
                     
                     try:
                         null_value_channel_dict[channel].append(value)
@@ -121,7 +127,6 @@ for combi in itt.combinations(channels, 2):
                     cursor.execute(query_statement)
                     value = cursor.fetchall()
                     value = value[0][0]
-                    print value
                     
                     try:
                         value_channel_dict[channel].append(value)
@@ -139,17 +144,13 @@ for combi in itt.combinations(channels, 2):
                                 # some are IGKC???
                             except KeyError:
                                     color = 'black'
-                                    print event
-                                    print isotype
                         else: color = 'white'
                             
                         try:
                             value_channel_dict['color'].append(color)
-                            print 'appended color'
                         except KeyError:
                             value_channel_dict['color'] = []
                             value_channel_dict['color'].append(color)
-                            print 'key error'
                     
                 
                 except IndexError:
@@ -157,13 +158,13 @@ for combi in itt.combinations(channels, 2):
         
         for x,y in zip(null_value_channel_dict[channel1[0]], null_value_channel_dict[channel2[0]]):
             if (x>=0 and y>=0):
-    		ax.scatter(np.arcsinh(x), np.arcsinh(y), color = 'lightgrey', s = 80)
+    		ax.scatter(np.arcsinh(x), np.arcsinh(y), color = 'lightgrey', s = 70, alpha=0.3)
         
         
         
         for x,y,c in zip(value_channel_dict[channel1[0]], value_channel_dict[channel2[0]], value_channel_dict['color']):
             if (x>=0 and y>=0):	
-    		ax.scatter(np.arcsinh(x), np.arcsinh(y), color = c, s = 20)
+    		ax.scatter(np.arcsinh(x), np.arcsinh(y), color = c, s = 40/len(event_names))
         ax.set_xlabel(channel1[0] + "\n" + event_name)
         ticks = [0,10, 100, 10**3,10**4,10**5]
         tick_labels = ["0","1E+01","1E+02","1E+03", "1E+04", "1E+05"]
@@ -175,7 +176,9 @@ for combi in itt.combinations(channels, 2):
         ax.set_ylim(0,np.arcsinh(10**5))
         plt.show()
     
-    plt.savefig(experiment_id+'cluster_'+channel1[0]+'_'+channel2[0]+'.pdf')
+    plt.savefig('cluster_'+channel1[0]+'_'+channel2[0]+'.pdf')
         
     plt.close()
-    
+
+# drop temporary heavy_light table
+igdbq.drop_temp_heavy_light(cursor)

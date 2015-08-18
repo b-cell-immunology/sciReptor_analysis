@@ -69,6 +69,10 @@ def create_temp_heavy_light (db_cursor):
         AND sequences.locus = 'H' AND sequences.consensus_rank = 1 \
         );"
     db_cursor.execute(create_statement)
+    
+def drop_temp_heavy_light (db_cursor):
+    drop_statement = "DROP TABLE heavy_light;"
+    db_cursor.execute(drop_statement)
 
 def get_H_isotype (event_id, db_cursor):
     isotype_statement = "SELECT constant_segments.name FROM constant_segments \

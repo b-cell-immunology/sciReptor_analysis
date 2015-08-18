@@ -1,11 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-CDR/FWR region length plots
-
-@author: katharina
-"""
-
-import bcelldb_init as bcelldb
 import igdb_plotting as igplt
 import numpy as np
 import MySQLdb as mysql
@@ -13,9 +6,6 @@ import matplotlib.pyplot as plt
 import sys
 import argparse
 import igdb_queries as igdbq
-
-
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument("event_infile", 
@@ -39,12 +29,7 @@ parser.add_argument("-c", "--cumulative",
 
 args = parser.parse_args()
 
-conf = bcelldb.get_config()
-
-if args.database:
-    db = args.database
-else:
-    db = conf['database']
+db = args.database
 
 
 # connect to database via ~/.my.conf settings

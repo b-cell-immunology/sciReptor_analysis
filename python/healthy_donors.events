@@ -1,23 +1,28 @@
-+>HD01
++>M70 BM
 SELECT event_id
 FROM %s.event
 JOIN %s.sort ON event.sort_id = sort.sort_id
 JOIN %s.sample ON sort.sample_id = sample.sample_id
 JOIN %s.donor ON sample.donor_id = donor.donor_id
-WHERE donor_identifier = 'HD01'
+WHERE donor_identifier = 'M70'
+AND sample.tissue = 'bone marrow'
 
-+>HD02
++>M70 PBMC
 SELECT event_id
 FROM %s.event
 JOIN %s.sort ON event.sort_id = sort.sort_id
 JOIN %s.sample ON sort.sample_id = sample.sample_id
 JOIN %s.donor ON sample.donor_id = donor.donor_id
-WHERE donor_identifier = 'HD02'
+WHERE donor_identifier = 'M70'
+AND sample.tissue = 'PBMC'
 
-+>HD03
++>M71 BM
 SELECT event_id
 FROM %s.event
 JOIN %s.sort ON event.sort_id = sort.sort_id
 JOIN %s.sample ON sort.sample_id = sample.sample_id
 JOIN %s.donor ON sample.donor_id = donor.donor_id
-WHERE donor_identifier = 'HD03'
+WHERE donor_identifier = 'M71'
+AND sample.tissue = 'bone marrow'
+
+

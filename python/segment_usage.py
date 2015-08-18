@@ -44,18 +44,17 @@ optional arguments:
                         
 """
 
-import bcelldb_init as bcelldb
-import igdb_plotting as igplt
 import numpy as np
 import numpy.random as random
 import MySQLdb as mysql
-import matplotlib.pyplot as plt
 import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
 import sys
 import colorsys
 import argparse
 import igdb_queries as igdbq
-import seaborn
+import igdb_plotting as igplt
 
 parser = argparse.ArgumentParser()
 parser.add_argument("event_infile", 
@@ -86,14 +85,10 @@ group.add_argument("-g", "--genes", type=str,
 
 args = parser.parse_args()
 
-# get config variables
-conf = bcelldb.get_config()
-if args.database:
-    db = args.database
-else:
-    db = conf['dabase']
+# get variables
+db = args.database
 lib = 'library_scireptor'
-
+print "Using library scheme %s. Do not use this script if this is not correct." % (lib)
 if args.constant:
     resolve = 'constant'
     segment = ""
