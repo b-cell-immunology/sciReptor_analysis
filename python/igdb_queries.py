@@ -81,3 +81,28 @@ def get_H_isotype (event_id, db_cursor):
     db_cursor.execute(isotype_statement)
     isotype = db_cursor.fetchall()
     return isotype
+
+def get_mutation_count (event_id, cursor):
+    mutation_statement = "SELECT sum(replacement) + sum(silent) \
+        FROM mutations\
+        JOIN sequences ON sequences.seq_id = mutations.seq_id AND sequences.consensus_rank = 1 \
+        WHERE event_id = %d;" % (event_id)
+    cursor.execute(mutation_statement)
+    try:
+        mutation = cursor.fetchall()[0][0]
+    except IndexError:
+        mutation = 0
+    return int(mutation)
+
+def get_mutation_count_seqid (seq_id, cursor):
+    mutation_statement = "SELECT sum(replacement) + sum(silent) \
+        FROM mutations \
+        JOIN sequences ON sequences.seq_id = mutations.seq_id \
+        WHERE sequences.seq_id = %d;" % (seq_id)
+    cursor.execute(mutation_statement)
+    try:
+        mutation = cursor.fetchall()[0][0]
+        return int(mutation)
+    except TypeError:
+        return 0
+    

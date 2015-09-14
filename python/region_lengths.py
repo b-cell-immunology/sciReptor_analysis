@@ -48,7 +48,7 @@ def get_region_lengths (event_statement):
             FROM %s.CDR_FWR \
             JOIN %s.sequences ON sequences.seq_id = CDR_FWR.seq_id \
             AND sequences.consensus_rank = 1 \
-            JOIN %s.event ON event.event_id = sequences.seq_id \
+            JOIN %s.event ON event.event_id = sequences.event_id \
             WHERE CDR_FWR.region = '%s' and sequences.locus = '%s' \
             AND event.event_id IN (%s) \
             GROUP BY prot_length \
@@ -74,7 +74,7 @@ for event_name, event_statement in zip(event_names, event_statements):
     if args.cumulative:
         heights = [sum(heights[:i]) for i in range(len(heights))]
     plt.plot(lengths, heights, label = event_name)
-plt.legend(loc=7)
+plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.xlabel("Length of " + args.region + " region in amino acids")
 if args.cumulative:
     title = "Cumulative frequency"

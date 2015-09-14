@@ -5,7 +5,6 @@ import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 import MySQLdb as mysql
-import bcelldb_init as bcelldb
 from datetime import datetime as dt
 import itertools as itt
 import igdb_queries as igdbq
@@ -31,6 +30,9 @@ parser.add_argument("-pb", "--platebarcode", type=str,
                     help="plate barcode to select channels that will be displayed")
 parser.add_argument("-o", "--outputdir", type=str, 
                     help="directory for pdf output") 
+parser.add_argument("-m", "--mutation", 
+                   help="Size according to mutation count",
+                   action="store_true")
 
 args = parser.parse_args()
 
@@ -73,6 +75,11 @@ def get_channels (plate_barcode):
     cursor.execute(channel_statement)
     channels = cursor.fetchall()
     return channels
+    
+def arcsinh_fct (x):
+    x = np.array(x)
+    y = np.arcsinh(x/10.)
+    return y
 
 channels = get_channels(plate_barcode)
 
@@ -154,33 +161,42 @@ for combi in itt.combinations(channels, 2):
                         except KeyError:
                             value_channel_dict['color'] = []
                             value_channel_dict['color'].append(color)
+                        
+                        factor = 1
+                        if args.mutation == True:
+                            factor = igdbq.get_mutation_count(int(event[0]), cursor)
+                            try:
+                                value_channel_dict['size'].append(factor)
+                            except KeyError:
+                                value_channel_dict['size'] = []
+                                value_channel_dict['size'].append(factor)
                     
                 
                 except IndexError:
                     next
         
         for x,y in zip(null_value_channel_dict[channel1[0]], null_value_channel_dict[channel2[0]]):
-            if (x>=0 and y>=0):
-    		ax.scatter(np.arcsinh(x), np.arcsinh(y), color = 'lightgrey', s = 70, alpha=0.3)
+            #if (x>=0 and y>=0):
+    		ax.scatter(arcsinh_fct(x), arcsinh_fct(y), color = 'lightgrey', s = 70, alpha=0.3)
         
         
         
-        for x,y,c in zip(value_channel_dict[channel1[0]], value_channel_dict[channel2[0]], value_channel_dict['color']):
-            if (x>=0 and y>=0):	
-    		ax.scatter(np.arcsinh(x), np.arcsinh(y), color = c, s = 40/len(event_names))
+        for x,y,c,s in zip(value_channel_dict[channel1[0]], value_channel_dict[channel2[0]], value_channel_dict['color'], value_channel_dict['size']):
+            #if (x>=0 and y>=0):	
+            ax.scatter(arcsinh_fct(x), arcsinh_fct(y), color = c, s = s/len(event_names))
         ax.set_xlabel(channel1[0] + "\n" + event_name)
-        ticks = [0,10, 100, 10**3,10**4,10**5]
-        tick_labels = ["0","1E+01","1E+02","1E+03", "1E+04", "1E+05"]
-        ax.set_xticks(np.arcsinh(ticks))
+        ticks = [-100, 0,10, 100, 10**3,10**4,10**5]
+        tick_labels = ["-1E+02","0","1E+01","1E+02","1E+03", "1E+04", "1E+05"]
+        ax.set_xticks(arcsinh_fct(ticks))
         ax.set_xticklabels(tick_labels, size = 7, rotation = 90)
-        ax.set_yticks(np.arcsinh(ticks))
+        ax.set_yticks(arcsinh_fct(ticks))
         ax.set_yticklabels(tick_labels, size = 7)
-        ax.set_xlim(0,np.arcsinh(10**5))
-        ax.set_ylim(0,np.arcsinh(10**5))
+        ax.set_xlim(arcsinh_fct(-10**2),arcsinh_fct(10**5))
+        ax.set_ylim(arcsinh_fct(-10**2),arcsinh_fct(10**5))
         plt.show()
 
     plt.tight_layout()    
-    plt.savefig(args.outputdir + '/flow_'+channel1[0]+'_'+channel2[0]+'.pdf')
+    plt.savefig(args.outputdir + '/flow_'+args.event_infile[:-7] + '_' +channel1[0]+'_'+channel2[0]+'.pdf')
         
     plt.close()
 
