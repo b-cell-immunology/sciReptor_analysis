@@ -1,23 +1,65 @@
 # Name			:	Stored Procedures for segment analysis
 # Author		:	Christian Busse
 # Maintainer	:	Christian Busse (christian.busse@dkfz-heidelberg.de)
-# Version:		:	0.1.1
-# Date			:	2015-05-02
+# Version:		:	0.2.0
+# Date			:	2016-02-24
 # License		:	AGPLv3
 # Description	:	This script generates several stored procedures to assist in the analysis of segment associations.
-#					Currently these are 'sub_temp_table_segment_association', which combines V, D and segments of all
-#					given consensus sequences and 'create_segment_view' which further combines this data to create a
-#					table containing associated/paired sequences based on identical event_id. Importantly,
-#					'create_segments_view' does consider the functionality status of the sequences and will fall back
-#					to the secondary sequence of a given locus if the primary is non-functional.
+#					Currently these are: 1) 'sub_temp_table_segment_association': Combines V, D and segments of all
+#					given consensus sequences. 2) 'sub_temp_table_v_segment_replacement_mutations': Counts all
+#					(synonymous and non-synonymous) replacement mutations in the V region of the consensus sequences.
+#					Ignores insertion/deletion mutations and masks the region templated by the PCR primer.
+#					3) 'create_segment_view' which further combines this data to create a table containing
+#					associated/paired sequences based on identical event_id. Importantly, 'create_segments_view' does
+#					consider the functionality status of the sequences and will fall back to the secondary sequence of
+#					a given locus if the primary is non-functional.
 # Notes			:	ATTENTION: 1) 'create_segment_view' does its functionality assessment *ONLY* based on the presence
 #					of stop codons in the CDR3. 2) Runtime of the procedure seems to scale exponentially with the amount
 #					of data. While small data sets complete within minutes, large data sets can take several hours.
 #					3) Be aware that 'sequences.consensus_rank' is NULL for Sanger sequences (this is handled correctly
-#					in the current implementation).
+#					in the current implementation). 4) 'sub_temp_table_v_segment_replacement_mutations' masks the
+#					primer binding region with a fixed and identical length for all loci (current the first 24 bp).
 #
 
 DELIMITER $$
+
+CREATE PROCEDURE `sub_temp_table_v_segment_replacement_mutations`()
+BEGIN
+
+DROP TABLE IF EXISTS derived_mutations_replacement;
+
+SET @length_primer = 24;
+
+CREATE TABLE derived_mutations_replacement AS (
+	SELECT
+		sequences.seq_id,
+		IFNULL(repl_mutations,0) AS repl_mutations
+	FROM sequences
+	LEFT OUTER JOIN (
+		SELECT seq_id, SUM(real_replacement) AS repl_mutations
+		FROM (
+			SELECT *
+			FROM (
+				SELECT
+					mutations.*,
+					(replacement + silent) AS real_replacement,
+					(@length_primer + query_start - germline_start) AS non_temp_start
+				FROM mutations
+				INNER JOIN igblast_alignment
+				ON mutations.seq_id=igblast_alignment.seq_id
+				WHERE germline_start <= query_start
+			) AS mutations_plus_cutoff
+			WHERE position_codonstart_on_seq >= non_temp_start
+		) AS mutations_filtered
+		WHERE insertion=0 AND deletion=0 AND stop_codon_germline=0
+		GROUP BY seq_id
+	) AS mutations_aggregated
+	ON sequences.seq_id=mutations_aggregated.seq_id
+);
+
+END$$
+
+
 CREATE PROCEDURE `sub_temp_table_segment_association`()
 BEGIN
 # Create temporary tables containing the connected V(D)J joints.
@@ -150,6 +192,7 @@ BEGIN
 # Generate a plain table showing the associated segments
 # Requires: sub_temp_table_association function
 #
+CALL sub_temp_table_v_segment_replacement_mutations;
 CALL sub_temp_table_segment_association;
 CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 	SELECT
@@ -165,14 +208,17 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 		temp_associated.igh_segment_j,
 		temp_associated.igh_cdr3,
 		temp_associated.igh_segment_c,
+		temp_associated.igh_shm,
 		temp_associated.igk_segment_v,
 		temp_associated.igk_segment_j,
 		temp_associated.igk_cdr3,
 		temp_associated.igk_segment_c,
+		temp_associated.igk_shm,
 		temp_associated.igl_segment_v,
 		temp_associated.igl_segment_j,
 		temp_associated.igl_cdr3,
-		temp_associated.igl_segment_c
+		temp_associated.igl_segment_c,
+		temp_associated.igl_shm
 	FROM (
 		SELECT 
 			temp_heavy.event_id			AS igh_segment_event_id,
@@ -181,14 +227,17 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 			temp_heavy.j_segment_name	AS igh_segment_j,
 			temp_heavy.CDR3				AS igh_cdr3,
 			temp_heavy.c_segment_name	AS igh_segment_c,
+			temp_heavy.repl_mutations	AS igh_shm,
 			temp_kappa.v_segment_name	AS igk_segment_v,
 			temp_kappa.j_segment_name	AS igk_segment_j,
 			temp_kappa.CDR3				AS igk_cdr3,
 			temp_kappa.c_segment_name	AS igk_segment_c,
+			temp_kappa.repl_mutations	AS igk_shm,
 			temp_lambda.v_segment_name	AS igl_segment_v,
 			temp_lambda.j_segment_name	AS igl_segment_j,
 			temp_lambda.CDR3			AS igl_cdr3,
-			temp_lambda.c_segment_name	AS igl_segment_c
+			temp_lambda.c_segment_name	AS igl_segment_c,
+			temp_lambda.repl_mutations	AS igl_shm
 		FROM (
 			SELECT 
 				sequences.event_id,
@@ -196,7 +245,8 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 				temp_table_H_VDJ.d_segment_name,
 				temp_table_H_VDJ.j_segment_name,
 				CDR.prot_seq AS CDR3,
-				temp_table_H_VDJ.c_segment_name
+				temp_table_H_VDJ.c_segment_name,
+				derived_mutations_replacement.repl_mutations
 			FROM temp_table_H_VDJ
 			INNER JOIN (
 				# The following query basically returns a seq_id and a CDR3 protein sequence, however it also contains
@@ -240,16 +290,20 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 				WHERE temp_table_functionality_2.event_id IS NULL
 			) AS CDR
 			INNER JOIN sequences
+			INNER JOIN derived_mutations_replacement
 			ON temp_table_H_VDJ.seq_id = CDR.seq_id
 				AND temp_table_H_VDJ.seq_id = sequences.seq_id
+				AND temp_table_H_VDJ.seq_id = derived_mutations_replacement.seq_id
 		) AS temp_heavy
 		LEFT OUTER JOIN (
 			SELECT 
 				sequences.event_id,
+				sequences.consensus_rank,
 				temp_table_K_VJ.v_segment_name,
 				temp_table_K_VJ.j_segment_name,
 				CDR.prot_seq AS CDR3,
-				temp_table_K_VJ.c_segment_name
+				temp_table_K_VJ.c_segment_name,
+				derived_mutations_replacement.repl_mutations
 			FROM temp_table_K_VJ
 			INNER JOIN (
 				SELECT
@@ -288,17 +342,21 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 				WHERE temp_table_functionality_2.event_id IS NULL
 			) AS CDR
 			INNER JOIN sequences
+			INNER JOIN derived_mutations_replacement
 			ON temp_table_K_VJ.seq_id = CDR.seq_id
 				AND temp_table_K_VJ.seq_id = sequences.seq_id
+				AND temp_table_K_VJ.seq_id = derived_mutations_replacement.seq_id
 		) AS temp_kappa
 		ON temp_heavy.event_id = temp_kappa.event_id
 		LEFT OUTER JOIN (
 			SELECT 
 				sequences.event_id,
+				sequences.consensus_rank,
 				temp_table_L_VJ.v_segment_name,
 				temp_table_L_VJ.j_segment_name,
 				CDR.prot_seq AS CDR3,
-				temp_table_L_VJ.c_segment_name
+				temp_table_L_VJ.c_segment_name,
+				derived_mutations_replacement.repl_mutations
 			FROM temp_table_L_VJ
 			INNER JOIN (
 				SELECT
@@ -337,8 +395,10 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 				WHERE temp_table_functionality_2.event_id IS NULL
 			) AS CDR
 			INNER JOIN sequences
+			INNER JOIN derived_mutations_replacement
 			ON temp_table_L_VJ.seq_id = CDR.seq_id
 				AND temp_table_L_VJ.seq_id = sequences.seq_id
+				AND temp_table_L_VJ.seq_id = derived_mutations_replacement.seq_id
 		) AS temp_lambda
 		ON temp_heavy.event_id = temp_lambda.event_id
 		WHERE temp_kappa.v_segment_name IS NOT NULL 
