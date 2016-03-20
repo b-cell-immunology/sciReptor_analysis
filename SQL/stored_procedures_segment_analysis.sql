@@ -1,8 +1,8 @@
 # Name			:	Stored Procedures for segment analysis
 # Author		:	Christian Busse
 # Maintainer	:	Christian Busse (christian.busse@dkfz-heidelberg.de)
-# Version:		:	0.2.0
-# Date			:	2016-02-24
+# Version:		:	0.2.1
+# Date			:	2016-03-19
 # License		:	AGPLv3
 # Description	:	This script generates several stored procedures to assist in the analysis of segment associations.
 #					Currently these are: 1) 'sub_temp_table_segment_association': Combines V, D and segments of all
@@ -18,7 +18,9 @@
 #					of data. While small data sets complete within minutes, large data sets can take several hours.
 #					3) Be aware that 'sequences.consensus_rank' is NULL for Sanger sequences (this is handled correctly
 #					in the current implementation). 4) 'sub_temp_table_v_segment_replacement_mutations' masks the
-#					primer binding region with a fixed and identical length for all loci (current the first 24 bp).
+#					primer binding region with a fixed and identical length for all loci (currently the first 24 bp). It
+#					further masks mutations located in the CDR3, even if (as often for both light chain loci) the actual
+#					location is still encoded by the V segment.
 #
 
 DELIMITER $$
@@ -43,13 +45,18 @@ CREATE TABLE derived_mutations_replacement AS (
 				SELECT
 					mutations.*,
 					(replacement + silent) AS real_replacement,
-					(@length_primer + query_start - germline_start) AS non_temp_start
+					(@length_primer + query_start - germline_start) AS non_temp_start,
+					CDR_FWR.end AS fwr3_end
 				FROM mutations
 				INNER JOIN igblast_alignment
+				INNER JOIN CDR_FWR
 				ON mutations.seq_id=igblast_alignment.seq_id
+					AND mutations.seq_id=CDR_FWR.seq_id
 				WHERE germline_start <= query_start
+					AND CDR_FWR.region='FR3'
 			) AS mutations_plus_cutoff
 			WHERE position_codonstart_on_seq >= non_temp_start
+				AND position_codonstart_on_seq < fwr3_end
 		) AS mutations_filtered
 		WHERE insertion=0 AND deletion=0 AND stop_codon_germline=0
 		GROUP BY seq_id
