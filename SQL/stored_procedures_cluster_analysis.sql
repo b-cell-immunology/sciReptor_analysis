@@ -27,8 +27,8 @@ CREATE TABLE derived_cluster_meta (
 	`segment_j` varchar(20),
 	`cdr3_length` int(10) unsigned,
 	UNIQUE KEY `cluster_comp_id_UNIQUE` (`cluster_comp_id`)
-) AS 
-SELECT 
+) AS
+SELECT
 	COUNT(DISTINCT event_id) AS nodes,
 	donor_identifier,
 	CAST('H' AS char(1)) AS locus,
@@ -38,7 +38,7 @@ SELECT
 FROM derived_segment_association
 GROUP BY donor_identifier, segment_v, segment_j, cdr3_length
 UNION
-SELECT 
+SELECT
 	COUNT(DISTINCT event_id) AS nodes,
 	donor_identifier,
 	CAST('K' AS char(1)) AS locus,
@@ -48,7 +48,7 @@ SELECT
 FROM derived_segment_association
 GROUP BY donor_identifier, segment_v, segment_j, cdr3_length
 UNION
-SELECT 
+SELECT
 	COUNT(DISTINCT event_id) AS nodes,
 	donor_identifier,
 	CAST('L' AS char(1)) AS locus,
@@ -65,7 +65,7 @@ CREATE TEMPORARY TABLE temp_table_cluster_comp (
 	`cluster_comp_kappa_id` int(10) unsigned,
 	`cluster_comp_lambda_id` int(10) unsigned
 ) AS
-SELECT 
+SELECT
 	segview.event_id,
 	cluster_comp_heavy.cluster_comp_id AS cluster_comp_heavy_id,
 	cluster_comp_kappa.cluster_comp_id AS cluster_comp_kappa_id,
@@ -126,11 +126,11 @@ SELECT
 	derived_cluster_comp.cluster_id AS cluster_id
 FROM temp_table_cluster_comp
 INNER JOIN derived_cluster_comp
-ON temp_table_cluster_comp.cluster_comp_heavy_id = derived_cluster_comp.cluster_comp_heavy_id 
+ON temp_table_cluster_comp.cluster_comp_heavy_id = derived_cluster_comp.cluster_comp_heavy_id
 AND (
-	temp_table_cluster_comp.cluster_comp_kappa_id = derived_cluster_comp.cluster_comp_kappa_id 
+	temp_table_cluster_comp.cluster_comp_kappa_id = derived_cluster_comp.cluster_comp_kappa_id
 	OR (
-		temp_table_cluster_comp.cluster_comp_kappa_id IS NULL 
+		temp_table_cluster_comp.cluster_comp_kappa_id IS NULL
 		AND derived_cluster_comp.cluster_comp_kappa_id IS NULL
 	)
 ) AND (

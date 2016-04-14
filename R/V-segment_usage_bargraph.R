@@ -64,7 +64,7 @@ make.plot <- function(usage.segment, chain.type, population) {
 		mtext("cumulate [%]",side=4,las=0,line=2)
 		mtext(
 			paste(as.character(trunc(usage.cumulate.rel[trunc((dim(usage.segment)[1]+1)/2,0)]*100,1)),"%",sep=""),
-			side=4, 
+			side=4,
 			at=usage.cumulate.rel[trunc((dim(usage.segment)[1]+1)/2,0)]*usage.max.abs,
 			line=0.5,
 			las=2
@@ -127,7 +127,7 @@ df_pop_tissue <- dbGetQuery(
 
 list_pop_tissue<-lapply(c(1:dim(df_pop_tissue)[1]),function(x){df_pop_tissue[x,]})
 
-sapply(list_pop_tissue, function(pop_tissue_current){ 
+sapply(list_pop_tissue, function(pop_tissue_current){
 	dbGetQuery(
 		connection.mysql,
 		paste(

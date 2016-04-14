@@ -77,12 +77,12 @@ BEGIN
 DROP TABLE IF EXISTS temp_table_H_VDJ, temp_table_H_VJ, temp_table_H_D, temp_table_H_C;
 
 CREATE TEMPORARY TABLE temp_table_H_VJ AS (
-	SELECT 
+	SELECT
 		v_segment.seq_id AS seq_id,
 		v_segment.name AS v_segment_name,
 		j_segment.name AS j_segment_name,
 		v_segment.locus AS locus
-	FROM 
+	FROM
 	(SELECT seq_id, `name`, igblast_rank, locus FROM VDJ_segments WHERE type='V' AND locus='H' AND igblast_rank=1) AS v_segment
 	INNER JOIN
 	(SELECT seq_id, `name`, igblast_rank, locus FROM VDJ_segments WHERE type='J' AND locus='H' AND igblast_rank=1) AS j_segment
@@ -93,7 +93,7 @@ ALTER TABLE temp_table_H_VJ ADD COLUMN d_segment_name VARCHAR(20) AFTER v_segmen
 ALTER TABLE temp_table_H_VJ ADD COLUMN c_segment_name VARCHAR(20) AFTER j_segment_name;
 
 CREATE TEMPORARY TABLE temp_table_H_D AS (
-	SELECT 
+	SELECT
 		seq_id,
 		`name` AS d_segment_name,
 		locus
@@ -104,7 +104,7 @@ CREATE TEMPORARY TABLE temp_table_H_D AS (
 );
 
 CREATE TEMPORARY TABLE temp_table_H_C AS (
-	SELECT 
+	SELECT
 		seq_id,
 		`name` AS c_segment_name
 	FROM constant_segments
@@ -127,12 +127,12 @@ ALTER TABLE temp_table_H_VJ RENAME temp_table_H_VDJ;
 DROP TABLE IF EXISTS temp_table_K_VJ, temp_table_K_C;
 
 CREATE TEMPORARY TABLE temp_table_K_VJ AS (
-	SELECT 
+	SELECT
 		v_segment.seq_id AS seq_id,
 		v_segment.name AS v_segment_name,
 		j_segment.name AS j_segment_name,
 		v_segment.locus AS locus
-	FROM 
+	FROM
 	(SELECT seq_id, `name`, igblast_rank, locus FROM VDJ_segments WHERE type='V' AND locus='K' AND igblast_rank=1) AS v_segment
 	INNER JOIN
 	(SELECT seq_id, `name`, igblast_rank, locus FROM VDJ_segments WHERE type='J' AND locus='K' AND igblast_rank=1) AS j_segment
@@ -142,7 +142,7 @@ CREATE TEMPORARY TABLE temp_table_K_VJ AS (
 ALTER TABLE temp_table_K_VJ ADD COLUMN c_segment_name VARCHAR(20) AFTER j_segment_name;
 
 CREATE TEMPORARY TABLE temp_table_K_C AS (
-	SELECT 
+	SELECT
 		seq_id,
 		`name` AS c_segment_name
 	FROM constant_segments
@@ -162,12 +162,12 @@ DROP TABLE IF EXISTS temp_table_K_C;
 DROP TABLE IF EXISTS temp_table_L_VJ, temp_table_L_C;
 
 CREATE TEMPORARY TABLE temp_table_L_VJ AS (
-	SELECT 
+	SELECT
 		v_segment.seq_id AS seq_id,
 		v_segment.name AS v_segment_name,
 		j_segment.name AS j_segment_name,
 		v_segment.locus AS locus
-	FROM 
+	FROM
 	(SELECT seq_id, `name`, igblast_rank, locus FROM VDJ_segments WHERE type='V' AND locus='L' AND igblast_rank=1) AS v_segment
 	INNER JOIN
 	(SELECT seq_id, `name`, igblast_rank, locus FROM VDJ_segments WHERE type='J' AND locus='L' AND igblast_rank=1) AS j_segment
@@ -177,7 +177,7 @@ CREATE TEMPORARY TABLE temp_table_L_VJ AS (
 ALTER TABLE temp_table_L_VJ ADD COLUMN c_segment_name VARCHAR(20) AFTER j_segment_name;
 
 CREATE TEMPORARY TABLE temp_table_L_C AS (
-	SELECT 
+	SELECT
 		seq_id,
 		`name` AS c_segment_name
 	FROM constant_segments
@@ -227,7 +227,7 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 		temp_associated.igl_segment_c,
 		temp_associated.igl_shm
 	FROM (
-		SELECT 
+		SELECT
 			temp_heavy.event_id			AS igh_segment_event_id,
 			temp_heavy.v_segment_name	AS igh_segment_v,
 			temp_heavy.d_segment_name	AS igh_segment_d,
@@ -246,7 +246,7 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 			temp_lambda.c_segment_name	AS igl_segment_c,
 			temp_lambda.repl_mutations	AS igl_shm
 		FROM (
-			SELECT 
+			SELECT
 				sequences.event_id,
 				temp_table_H_VDJ.v_segment_name,
 				temp_table_H_VDJ.d_segment_name,
@@ -265,12 +265,12 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 					temp_table_functionality_1.seq_id,
 					temp_table_functionality_1.prot_seq
 				FROM (
-					SELECT 
+					SELECT
 						sequences.event_id,
 						sequences.seq_id,
 						sequences.consensus_rank,
 						CDR_FWR.prot_seq,
-						CDR_FWR.stop_codon 
+						CDR_FWR.stop_codon
 					FROM sequences
 					INNER JOIN CDR_FWR
 					ON sequences.seq_id=CDR_FWR.seq_id
@@ -279,12 +279,12 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 						AND stop_codon=0
 				) AS temp_table_functionality_1
 				LEFT JOIN (
-					SELECT 
+					SELECT
 						sequences.event_id,
 						sequences.seq_id,
 						sequences.consensus_rank,
 						CDR_FWR.prot_seq,
-						CDR_FWR.stop_codon 
+						CDR_FWR.stop_codon
 					FROM sequences
 					INNER JOIN CDR_FWR
 					ON sequences.seq_id=CDR_FWR.seq_id
@@ -292,7 +292,7 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 						AND region='CDR3'
 						AND stop_codon=0
 				) AS temp_table_functionality_2
-				ON temp_table_functionality_1.event_id = temp_table_functionality_2.event_id 
+				ON temp_table_functionality_1.event_id = temp_table_functionality_2.event_id
 					AND temp_table_functionality_1.consensus_rank > temp_table_functionality_2.consensus_rank
 				WHERE temp_table_functionality_2.event_id IS NULL
 			) AS CDR
@@ -303,7 +303,7 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 				AND temp_table_H_VDJ.seq_id = derived_mutations_replacement.seq_id
 		) AS temp_heavy
 		LEFT OUTER JOIN (
-			SELECT 
+			SELECT
 				sequences.event_id,
 				sequences.consensus_rank,
 				temp_table_K_VJ.v_segment_name,
@@ -317,12 +317,12 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 					temp_table_functionality_1.seq_id,
 					temp_table_functionality_1.prot_seq
 				FROM (
-					SELECT 
+					SELECT
 						sequences.event_id,
 						sequences.seq_id,
 						sequences.consensus_rank,
 						CDR_FWR.prot_seq,
-						CDR_FWR.stop_codon 
+						CDR_FWR.stop_codon
 					FROM sequences
 					INNER JOIN CDR_FWR
 					ON sequences.seq_id=CDR_FWR.seq_id
@@ -331,12 +331,12 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 						AND stop_codon=0
 				) AS temp_table_functionality_1
 				LEFT JOIN (
-					SELECT 
+					SELECT
 						sequences.event_id,
 						sequences.seq_id,
 						sequences.consensus_rank,
 						CDR_FWR.prot_seq,
-						CDR_FWR.stop_codon 
+						CDR_FWR.stop_codon
 					FROM sequences
 					INNER JOIN CDR_FWR
 					ON sequences.seq_id=CDR_FWR.seq_id
@@ -344,7 +344,7 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 						AND region='CDR3'
 						AND stop_codon=0
 				) AS temp_table_functionality_2
-				ON temp_table_functionality_1.event_id = temp_table_functionality_2.event_id 
+				ON temp_table_functionality_1.event_id = temp_table_functionality_2.event_id
 					AND temp_table_functionality_1.consensus_rank > temp_table_functionality_2.consensus_rank
 				WHERE temp_table_functionality_2.event_id IS NULL
 			) AS CDR
@@ -356,7 +356,7 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 		) AS temp_kappa
 		ON temp_heavy.event_id = temp_kappa.event_id
 		LEFT OUTER JOIN (
-			SELECT 
+			SELECT
 				sequences.event_id,
 				sequences.consensus_rank,
 				temp_table_L_VJ.v_segment_name,
@@ -370,12 +370,12 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 					temp_table_functionality_1.seq_id,
 					temp_table_functionality_1.prot_seq
 				FROM (
-					SELECT 
+					SELECT
 						sequences.event_id,
 						sequences.seq_id,
 						sequences.consensus_rank,
 						CDR_FWR.prot_seq,
-						CDR_FWR.stop_codon 
+						CDR_FWR.stop_codon
 					FROM sequences
 					INNER JOIN CDR_FWR
 					ON sequences.seq_id=CDR_FWR.seq_id
@@ -384,12 +384,12 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 						AND stop_codon=0
 				) AS temp_table_functionality_1
 				LEFT JOIN (
-					SELECT 
+					SELECT
 						sequences.event_id,
 						sequences.seq_id,
 						sequences.consensus_rank,
 						CDR_FWR.prot_seq,
-						CDR_FWR.stop_codon 
+						CDR_FWR.stop_codon
 					FROM sequences
 					INNER JOIN CDR_FWR
 					ON sequences.seq_id=CDR_FWR.seq_id
@@ -397,7 +397,7 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 						AND region='CDR3'
 						AND stop_codon=0
 				) AS temp_table_functionality_2
-				ON temp_table_functionality_1.event_id = temp_table_functionality_2.event_id 
+				ON temp_table_functionality_1.event_id = temp_table_functionality_2.event_id
 					AND temp_table_functionality_1.consensus_rank > temp_table_functionality_2.consensus_rank
 				WHERE temp_table_functionality_2.event_id IS NULL
 			) AS CDR
@@ -408,9 +408,9 @@ CREATE TABLE derived_segment_association ENGINE=MYISAM AS (
 				AND temp_table_L_VJ.seq_id = derived_mutations_replacement.seq_id
 		) AS temp_lambda
 		ON temp_heavy.event_id = temp_lambda.event_id
-		WHERE temp_kappa.v_segment_name IS NOT NULL 
+		WHERE temp_kappa.v_segment_name IS NOT NULL
 			OR temp_lambda.v_segment_name IS NOT NULL
-	) AS temp_associated 
+	) AS temp_associated
 	INNER JOIN `event`
 	INNER JOIN sort
 	INNER JOIN sample
